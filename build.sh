@@ -18,3 +18,4 @@ cat src/control/translation_functions.c >> $file
 cat maze-files/formatted-data/config1.h >> $file
 cat src/parser/parser.c >> $file
 cat src/solver/solver.c >> $file
+cat src/main.ino >> $file
