@@ -1,97 +1,16 @@
-//#include "src/control/translation.c"
-
-#define PF_F 2 //Passenger_Front_Forward signal
-#define PF_B 3 //Passenger_Front_Backward signal
-
-#define DF_F 4 //Driver_Front_Forward signal
-#define DF_B 5 //Driver_Front_Backward signal
-
-#define PR_F 6 //Passenger_Rear_Forward signal
-#define PR_B 7 //Passenger_Rear_Backward signal
-
-#define DR_F 8 //Driver_Rear_Forward signal
-#define DR_B 9 //Driver_Rear_Backward signal
-
-void forward(){
-//  digitalWrite(PF_F, HIGH);
-//  digitalWrite(DF_F, HIGH);
-//  digitalWrite(PR_F, HIGH);
-//  digitalWrite(DR_F, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_F, LOW);
-//  digitalWrite(DF_F, LOW);
-//  digitalWrite(PR_F, LOW);
-//  digitalWrite(DR_F, LOW);
+char test0(Motion* node, float tolerance) {
+    return 1;
 }
-
-void backward(){
-//  digitalWrite(PF_B, HIGH);
-//  digitalWrite(DF_B, HIGH);
-//  digitalWrite(PR_B, HIGH);
-//  digitalWrite(DR_B, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_B, LOW);
-//  digitalWrite(DF_B, LOW);
-//  digitalWrite(PR_B, LOW);
-//  digitalWrite(DR_B, LOW);
-}
-
-void left(){
-//  digitalWrite(PF_F, HIGH);
-//  digitalWrite(DF_B, HIGH);
-//  digitalWrite(PR_B, HIGH);
-//  digitalWrite(DR_F, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_F, LOW);
-//  digitalWrite(DF_B, LOW);
-//  digitalWrite(PR_B, LOW);
-//  digitalWrite(DR_F, LOW);
-}
-
-void right(){
-//  digitalWrite(PF_B, HIGH);
-//  digitalWrite(DF_F, HIGH);
-//  digitalWrite(PR_F, HIGH);
-//  digitalWrite(DR_B, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_B, LOW);
-//  digitalWrite(DF_F, LOW);
-//  digitalWrite(PR_F, LOW);
-//  digitalWrite(DR_B, LOW);
-}
-
-void motor_init() {
-//pinMode(DF_F,OUTPUT);
-//pinMode(DF_B,OUTPUT);
-//
-//pinMode(DR_F,OUTPUT);
-//pinMode(DR_B,OUTPUT);
-//
-//pinMode(PF_F,OUTPUT);
-//pinMode(PF_B,OUTPUT);
-//
-//pinMode(PR_F,OUTPUT);
-//pinMode(PR_B,OUTPUT);
-}
-
 char test1(Motion* node, float tolerance) {
-    printf("Test1\n");
-    forward();
-    backward();
+    drive(fwd, 1000);
     return 1;
 }
 char test2(Motion* node, float tolerance) {
-    printf("Test2\n");
-    left();
+    drive(cw, 1000);
     return 1;
 }
 char test3(Motion* node, float tolerance) {
-    printf("Test3\n");
-    right();
+    drive(ccw, 1000);
     return 1;
 }
 char test4(Motion* node, float tolerance) {//fail
@@ -145,5 +64,5 @@ char straight(Motion* node, float tollerance) {
 char obstacle(Motion* node, float tolerance) {
 }
 
-char (*functions[]) (Motion*, float) = {test1, test1, test2, test3, test4};
+char (*functions[]) (Motion*, float) = {test0, test1, test2, test3, test4}; //BUG TEST 0 is used as safe space value and should not be executed but it is one program reversal
 

@@ -5,13 +5,15 @@
 const char applyMotion(Motion* node) {
     //Do motor movements and logic to acheive it
     if(node->func >= (sizeof(functions)/sizeof(functions[0]))) {
-        printf("[!]Function not in list\n");
+        Serial.println("[!]Function not in list\n");
         return 0;
     }
     if(!functions[node->func](node, tolerance)) {
-        printf("[#]Function failed to complete Reversing\n");
+        Serial.println("[#]Function failed to complete Reversing\n");
         return 0;
     }
+    Serial.print("Movement: ");
+    Serial.println(node->func);
     return 1;
 
     //If successful return 1
@@ -20,7 +22,7 @@ const char applyMotion(Motion* node) {
 
 void pathFinder(Motion* node) {
     if(node->next[0] == 0) {
-        printf("[#]Finished Maze!!\n");
+        Serial.println("[#]Finished Maze!!\n");
         exit(1); //Finished Maze
     }
     int i = 0;

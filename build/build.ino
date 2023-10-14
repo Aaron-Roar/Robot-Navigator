@@ -79,24 +79,52 @@ Motion* addLinearMovement(Position movement, int func, Motion* prev_motion) {
     );
 }
 
-void forward(); //Move forward 1mm
-void backward(); //Move bckwrd 1mm
-void left(); //move left 1mm
-void right(); //move right 1mm
-
 int temp_sense_value = 50;
 
+char bckwd[] =   {1, 3, 5, 7}; //33 35 37 39
+char fwd[] =     {2, 4, 6, 8}; //34 36 38 40
+char right[] =   {7, 6, 4, 1}; //39 38 36 33
+char left[] =    {8, 5, 3, 2}; //40 37 35 34
+char cw[] =      {2, 4, 5, 7}; //34 36 37 39
+char ccw[] =     {1, 3, 6, 8}; //33 35 38 40
 
 
-void drive(void direction(), int distance) { //move in direction by mm
-    int cycles = distance;
-    while(cycles > 0) {
-        direction();
-        cycles -= 1;
+void writePortC(char* pins, char pins_size, char state) {
+    int i = 0;
+    long result = 0;
+    while(i < pins_size) {
+        result |= (1 << pins[i]);
+        i += 1;
+    }
+
+    if(state) {
+        PIOC -> PIO_SODR = result;   // set pin
+    } else{
+        PIOC -> PIO_CODR = result;  // clear pin
     }
 }
 
-void rotate(int degrees);
+void drive(char* direction, long milliseconds) {
+    writePortC(direction, sizeof(char)*4, 1);
+    delay(milliseconds);
+    writePortC(direction, sizeof(char)*4, 0);
+    delay(500);
+}
+
+
+void motorInit() {
+    pinMode (33, OUTPUT);
+    pinMode (34, OUTPUT);
+    pinMode (35, OUTPUT);
+    pinMode (36, OUTPUT);
+    pinMode (37, OUTPUT);
+    pinMode (38, OUTPUT);
+    pinMode (39, OUTPUT);
+    pinMode (40, OUTPUT);
+    pinMode (41, OUTPUT);
+}
+
+
 //#include <Wire.h>
 //#include <VL53L0X.h>
 
@@ -230,100 +258,19 @@ Position deltaEnvironment(Motion* node, float tolerance) {
 //    //printf("Feedback: %d\n", checkEnvironmentSum(node, 0.1));
 //}
 
-//#include "src/control/translation.c"
-
-#define PF_F 2 //Passenger_Front_Forward signal
-#define PF_B 3 //Passenger_Front_Backward signal
-
-#define DF_F 4 //Driver_Front_Forward signal
-#define DF_B 5 //Driver_Front_Backward signal
-
-#define PR_F 6 //Passenger_Rear_Forward signal
-#define PR_B 7 //Passenger_Rear_Backward signal
-
-#define DR_F 8 //Driver_Rear_Forward signal
-#define DR_B 9 //Driver_Rear_Backward signal
-
-void forward(){
-//  digitalWrite(PF_F, HIGH);
-//  digitalWrite(DF_F, HIGH);
-//  digitalWrite(PR_F, HIGH);
-//  digitalWrite(DR_F, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_F, LOW);
-//  digitalWrite(DF_F, LOW);
-//  digitalWrite(PR_F, LOW);
-//  digitalWrite(DR_F, LOW);
+char test0(Motion* node, float tolerance) {
+    return 1;
 }
-
-void backward(){
-//  digitalWrite(PF_B, HIGH);
-//  digitalWrite(DF_B, HIGH);
-//  digitalWrite(PR_B, HIGH);
-//  digitalWrite(DR_B, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_B, LOW);
-//  digitalWrite(DF_B, LOW);
-//  digitalWrite(PR_B, LOW);
-//  digitalWrite(DR_B, LOW);
-}
-
-void left(){
-//  digitalWrite(PF_F, HIGH);
-//  digitalWrite(DF_B, HIGH);
-//  digitalWrite(PR_B, HIGH);
-//  digitalWrite(DR_F, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_F, LOW);
-//  digitalWrite(DF_B, LOW);
-//  digitalWrite(PR_B, LOW);
-//  digitalWrite(DR_F, LOW);
-}
-
-void right(){
-//  digitalWrite(PF_B, HIGH);
-//  digitalWrite(DF_F, HIGH);
-//  digitalWrite(PR_F, HIGH);
-//  digitalWrite(DR_B, HIGH);
-//  delay(10);
-//
-//  digitalWrite(PF_B, LOW);
-//  digitalWrite(DF_F, LOW);
-//  digitalWrite(PR_F, LOW);
-//  digitalWrite(DR_B, LOW);
-}
-
-void motor_init() {
-//pinMode(DF_F,OUTPUT);
-//pinMode(DF_B,OUTPUT);
-//
-//pinMode(DR_F,OUTPUT);
-//pinMode(DR_B,OUTPUT);
-//
-//pinMode(PF_F,OUTPUT);
-//pinMode(PF_B,OUTPUT);
-//
-//pinMode(PR_F,OUTPUT);
-//pinMode(PR_B,OUTPUT);
-}
-
 char test1(Motion* node, float tolerance) {
-    printf("Test1\n");
-    forward();
-    backward();
+    drive(fwd, 1000);
     return 1;
 }
 char test2(Motion* node, float tolerance) {
-    printf("Test2\n");
-    left();
+    drive(cw, 1000);
     return 1;
 }
 char test3(Motion* node, float tolerance) {
-    printf("Test3\n");
-    right();
+    drive(ccw, 1000);
     return 1;
 }
 char test4(Motion* node, float tolerance) {//fail
@@ -377,14 +324,14 @@ char straight(Motion* node, float tollerance) {
 char obstacle(Motion* node, float tolerance) {
 }
 
-char (*functions[]) (Motion*, float) = {test1, test1, test2, test3, test4};
+char (*functions[]) (Motion*, float) = {test0, test1, test2, test3, test4}; //BUG TEST 0 is used as safe space value and should not be executed but it is one program reversal
 
 
 const char config1[]=
 "@P1 \n"
 "*P2 \n"
+"T1:10 55 1000 1200 \n"
 "T2:10 55 1000 1200 \n"
-"T3:10 55 1000 1200 \n"
 "#P1 \n"
 " \n"
 "@P2 \n"
@@ -586,13 +533,15 @@ void reccursiveParser(const char* paragraph, Motion* prev_motion) {
 const char applyMotion(Motion* node) {
     //Do motor movements and logic to acheive it
     if(node->func >= (sizeof(functions)/sizeof(functions[0]))) {
-        printf("[!]Function not in list\n");
+        Serial.println("[!]Function not in list\n");
         return 0;
     }
     if(!functions[node->func](node, tolerance)) {
-        printf("[#]Function failed to complete Reversing\n");
+        Serial.println("[#]Function failed to complete Reversing\n");
         return 0;
     }
+    Serial.print("Movement: ");
+    Serial.println(node->func);
     return 1;
 
     //If successful return 1
@@ -601,7 +550,7 @@ const char applyMotion(Motion* node) {
 
 void pathFinder(Motion* node) {
     if(node->next[0] == 0) {
-        printf("[#]Finished Maze!!\n");
+        Serial.println("[#]Finished Maze!!\n");
         exit(1); //Finished Maze
     }
     int i = 0;
@@ -628,6 +577,8 @@ void pathFinder(Motion* node) {
 //}
 
 void setup() {
+    Serial.begin(9600);
+    motorInit();
     Motion nothing = {0};
     reccursiveParser(config1, &nothing);
     pathFinder(&nothing);
