@@ -17,9 +17,9 @@ void writePortC(char* pins, char pins_size, char state) {
     }
 
     if(state) {
-        PIOC -> PIO_SODR = result;   // set pin
+        PIOC -> PIO_SODR = result;   // set pin DIRECT PORT ACCESS
     } else{
-        PIOC -> PIO_CODR = result;  // clear pin
+        PIOC -> PIO_CODR = result;  // clear pin DIRECT PORT ACCESS
     }
 }
 

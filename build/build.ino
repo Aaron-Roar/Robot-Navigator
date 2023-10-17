@@ -98,9 +98,9 @@ void writePortC(char* pins, char pins_size, char state) {
     }
 
     if(state) {
-        PIOC -> PIO_SODR = result;   // set pin
+        PIOC -> PIO_SODR = result;   // set pin DIRECT PORT ACCESS
     } else{
-        PIOC -> PIO_CODR = result;  // clear pin
+        PIOC -> PIO_CODR = result;  // clear pin DIRECT PORT ACCESS
     }
 }
 
@@ -262,11 +262,11 @@ char test0(Motion* node, float tolerance) {
     return 1;
 }
 char test1(Motion* node, float tolerance) {
-    drive(fwd, 1000);
+    drive(right, 10000);
     return 1;
 }
 char test2(Motion* node, float tolerance) {
-    drive(cw, 1000);
+    drive(left, 1000);
     return 1;
 }
 char test3(Motion* node, float tolerance) {
@@ -329,16 +329,15 @@ char (*functions[]) (Motion*, float) = {test0, test1, test2, test3, test4}; //BU
 
 const char config1[]=
 "@P1 \n"
-"*P2 \n"
 "T1:10 55 1000 1200 \n"
-"T2:10 55 1000 1200 \n"
+"T1:10 55 1000 1200 \n"
+"T1:10 55 1000 1200 \n"
+"T1:10 55 1000 1200 \n"
+"T1:10 55 1000 1200 \n"
 "#P1 \n"
 " \n"
 "@P2 \n"
 "T1:10 55 1000 1200 \n"
-"T2:10 55 1000 1200 \n"
-"T3:10 55 1000 1200 \n"
-"T4:10 55 1000 1200 \n"
 "#P2 \n"
 " \n"
 " \n"

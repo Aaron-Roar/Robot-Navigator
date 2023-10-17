@@ -2,11 +2,11 @@ char test0(Motion* node, float tolerance) {
     return 1;
 }
 char test1(Motion* node, float tolerance) {
-    drive(fwd, 1000);
+    drive(right, 10000);
     return 1;
 }
 char test2(Motion* node, float tolerance) {
-    drive(cw, 1000);
+    drive(left, 1000);
     return 1;
 }
 char test3(Motion* node, float tolerance) {
