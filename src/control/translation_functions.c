@@ -2,7 +2,7 @@ char test0(Motion* node, float tolerance) {
     return 1;
 }
 char test1(Motion* node, float tolerance) {
-    drive(right, 10000);
+    drive(fwd, 1000); //CHANGE THIS TO (left) (fwd) (whatever)
     return 1;
 }
 char test2(Motion* node, float tolerance) {

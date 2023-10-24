@@ -39,13 +39,18 @@ char checkEnvironmentSum(Motion* node, float tolerance) {
 
 //(Env - Intended Position)
 Position deltaEnvironment(Motion* node, float tolerance) {
+//    return (Position) {
+//        .left = (int)(readLeft() - node->movement.linear_movement.left),
+//        .right = (int)(readRight() - node->movement.linear_movement.right),
+//        .fwd = (int)(readFwd() - node->movement.linear_movement.fwd),
+//        .bckwd = (int)(readBckwd() - node->movement.linear_movement.bckwd)
+//    };
     Position pos;
     pos.left = (int)(readLeft() - node->movement.linear_movement.left);
     pos.right = (int)(readRight() - node->movement.linear_movement.right);
     pos.fwd = (int)(readFwd() - node->movement.linear_movement.fwd);
     pos.bckwd = (int)(readBckwd() - node->movement.linear_movement.bckwd);
     return pos;
-
 }
 
 
