@@ -1,7 +1,8 @@
 int temp_sense_value = 50;
 
-char bckwd[] =   {1, 3, 5, 7}; //33 35 37 39
+                               //PIN# - 32
 char fwd[] =     {2, 4, 6, 8}; //34 36 38 40
+char bckwd[] =   {1, 3, 5, 7}; //33 35 37 39
 char right[] =   {7, 6, 4, 1}; //39 38 36 33
 char left[] =    {8, 5, 3, 2}; //40 37 35 34
 char cw[] =      {2, 4, 5, 7}; //34 36 37 39
@@ -23,11 +24,12 @@ void writePortC(char* pins, char pins_size, char state) {
     }
 }
 
-void drive(char* direction, long milliseconds) {
+void drive(char* direction) {
     writePortC(direction, sizeof(char)*4, 1);
-    delay(milliseconds);
+}
+
+void stop(char* direction) {
     writePortC(direction, sizeof(char)*4, 0);
-    delay(500);
 }
 
 

@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdio.h> 
 #include <stdint.h>
+#include <Wire.h>
+#include <VL53L0X.h>
 //#include <stdint.h>
 
 typedef struct Position {
@@ -81,8 +83,9 @@ Motion* addLinearMovement(Position movement, int func, Motion* prev_motion) {
 
 int temp_sense_value = 50;
 
-char bckwd[] =   {1, 3, 5, 7}; //33 35 37 39
+                               //PIN# - 32
 char fwd[] =     {2, 4, 6, 8}; //34 36 38 40
+char bckwd[] =   {1, 3, 5, 7}; //33 35 37 39
 char right[] =   {7, 6, 4, 1}; //39 38 36 33
 char left[] =    {8, 5, 3, 2}; //40 37 35 34
 char cw[] =      {2, 4, 5, 7}; //34 36 37 39
@@ -104,11 +107,12 @@ void writePortC(char* pins, char pins_size, char state) {
     }
 }
 
-void drive(char* direction, long milliseconds) {
+void drive(char* direction) {
     writePortC(direction, sizeof(char)*4, 1);
-    delay(milliseconds);
+}
+
+void stop(char* direction) {
     writePortC(direction, sizeof(char)*4, 0);
-    delay(500);
 }
 
 
@@ -128,70 +132,101 @@ void motorInit() {
 //#include <Wire.h>
 //#include <VL53L0X.h>
 
-//VL53L0X fwd_tof;
-//VL53L0X bckwd_tof;
-//VL53L0X left_tof;
-//VL53L0X right_tof;
+VL53L0X fwd_tof;
+VL53L0X bckwd_tof;
+VL53L0X left_tof;
+VL53L0X right_tof;
 
-struct Tofs {
-    int fwd, bckwd, left, right;
-};
+float l_offset = 27; //milimeters
+float r_offset = 27;
+float f_offset = 20;
+float b_offset = 20;
 
-void tof_init() {
-//    pinMode(9, OUTPUT);
-//    pinMode(10, OUTPUT);
-//    pinMode(11, OUTPUT);
-//    pinMode(12, OUTPUT);
-//    digitalWrite(9, LOW);
-//    digitalWrite(10, LOW);
-//    digitalWrite(11, LOW);
-//    digitalWrite(12, LOW);
+void tofInit() {
+
+    pinMode(2, OUTPUT);
+    pinMode(3, OUTPUT);
+    pinMode(4, OUTPUT);
+    pinMode(5, OUTPUT);
+    digitalWrite(2, LOW);
+    digitalWrite(3, LOW);
+    digitalWrite(4, LOW);
+    digitalWrite(5, LOW);
+
+    Wire.begin();
+    //SENSOR
+    pinMode(2, INPUT);
+    fwd_tof.init(true);
+    fwd_tof.setAddress((uint8_t)22);
+
+    pinMode(3, INPUT);
+    bckwd_tof.init(true);
+    bckwd_tof.setAddress((uint8_t)25);
+
+  pinMode(5, INPUT);
+  left_tof.init(true);
+  left_tof.setAddress((uint8_t)28);
+
+    pinMode(4, INPUT);
+    right_tof.init(true);
+    right_tof.setAddress((uint8_t)31);
+
+
+    fwd_tof.setTimeout(100);
+    bckwd_tof.setTimeout(100);
+    left_tof.setTimeout(100);
+    right_tof.setTimeout(100);
+
+
+//        left_tof.setMeasurementTimingBudget(200000);
+//        left_tof.setSignalRateLimit(0.1);
+//        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+//        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
 //
-//    Wire.begin();
-//    //SENSOR
-//    pinMode(9, INPUT);
-//    fwd_tof.init(true);
-//    fwd_tof.setAddress((uint8_t)22);
+//        right_tof.setMeasurementTimingBudget(200000);
+//        right_tof.setSignalRateLimit(0.1);
+//        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+//        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
 //
-//    pinMode(10, INPUT);
-//    bckwd_tof.init(true);
-//    bckwd_tof.setAddress((uint8_t)25);
+//        fwd_tof.setMeasurementTimingBudget(200000);
+//        fwd_tof.setSignalRateLimit(0.1);
+//        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+//        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
 //
-//    pinMode(11, INPUT);
-//    left_tof.init(true);
-//    left_tof.setAddress((uint8_t)29);
-//
-//    pinMode(12, INPUT);
-//    right_tof.init(true);
-//    right_tof.setAddress((uint8_t)32);
-//
-//
-//    fwd_tof.setTimeout(10);
-//    bckwd_tof.setTimeout(10);
-//    left_tof.setTimeout(10);
-//    right_tof.setTimeout(10);
-//
-//
-//    byte count = 0;
-//    for (byte i = 1; i < 40; i++)
-//    {
-//        Wire.beginTransmission (i);
-//    }
+//        bckwd_tof.setMeasurementTimingBudget(200000);
+//        bckwd_tof.setSignalRateLimit(0.1);
+//        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+//        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+
+        Wire.beginTransmission (22);
+        Wire.beginTransmission (25);
+      Wire.beginTransmission (28);
+        Wire.beginTransmission (31);
 }
 
 int readFwd() {
-//    return fwd_tof.readRangeSingleMillimeters() + 0; //+ offset
+    return fwd_tof.readRangeSingleMillimeters() + f_offset - 10; //+ offset
 } //read TOF fwd
 int readBckwd() {
- //   return bckwd_tof.readRangeSingleMillimeters() + 0; //+ offset
+    return bckwd_tof.readRangeSingleMillimeters() + b_offset - 10; //+ offset
 } //read TOF bck
 int readLeft() {
-//    return left_tof.readRangeSingleMillimeters() + 0; //+ offset
+    return left_tof.readRangeSingleMillimeters() + l_offset - 10; //+ offset
 } //
 int readRight() {
-//    return right_tof.readRangeSingleMillimeters() + 0; //+ offset
+    return right_tof.readRangeSingleMillimeters() + r_offset - 10; //+ offset
 } //
 
+Position currentPosition() {
+    Position pos;
+
+    pos.left = readLeft();
+    pos.right = readRight();
+    pos.fwd = readFwd();
+    pos.bckwd = readBckwd();
+
+    return pos;
+}
 
 
 //#include "src/parser/parser.c"
@@ -199,27 +234,28 @@ int readRight() {
 //#include "src/hardware/tof.c"
 //#include <stdio.h>
 
-float tolerance = 10;
+float tolerance = 20;
+float safe_z = 20;
 
-char lrState(Motion* node, float tolerance) {
-    int env_lr = readLeft() + readRight();//read left & right
+char lrState(Motion* node, Position pos, float tolerance) {
+    int env_lr = pos.left + pos.right;//read left & right
     int node_lr = node->movement.linear_movement.left + node->movement.linear_movement.right;
-    char lr_state = !(((env_lr + env_lr*tolerance) < node_lr) || ((env_lr - env_lr*tolerance) > node_lr)); //boolean for if lr w in tolerance
+    char lr_state = !(((env_lr + tolerance) < node_lr) || ((env_lr - tolerance) > node_lr)); //boolean for if lr w in tolerance
     return lr_state;
 }
 
-char fbState(Motion* node, float tolerance) {
-    int env_fb = readFwd() + readBckwd();//read front & back
+char fbState(Motion* node, Position pos, float tolerance) {
+    int env_fb = pos.fwd + pos.bckwd;//read front & back
     int node_fb = node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd;
-    char fb_state = !(((env_fb + env_fb*tolerance) < node_fb) || ((env_fb - env_fb*tolerance) > node_fb)); //boolean for if lr w in tolerance
+    char fb_state = !(((env_fb + tolerance) < node_fb) || ((env_fb - tolerance) > node_fb)); //boolean for if lr w in tolerance
     return fb_state;
 }
 
 
 //Checks to see if the node and env 
-char checkEnvironmentSum(Motion* node, float tolerance) {
-    char lr_state = lrState(node, tolerance);
-    char fb_state = fbState(node, tolerance);
+char checkEnvironmentSum(Motion* node, Position pos, float tolerance) {
+    char lr_state = lrState(node, pos, tolerance);
+    char fb_state = fbState(node, pos, tolerance);
 
     //1:ALL True  2:ALL False  3:LR False  4:FB False
     if(lr_state && fb_state)
@@ -234,15 +270,59 @@ char checkEnvironmentSum(Motion* node, float tolerance) {
 }
 
 //(Env - Intended Position)
-Position deltaEnvironment(Motion* node, float tolerance) {
+Position deltaEnvironment(Motion* node, Position current, float tolerance) {
+//    return (Position) {
+//        .left = (int)(readLeft() - node->movement.linear_movement.left),
+//        .right = (int)(readRight() - node->movement.linear_movement.right),
+//        .fwd = (int)(readFwd() - node->movement.linear_movement.fwd),
+//        .bckwd = (int)(readBckwd() - node->movement.linear_movement.bckwd)
+//    };
     Position pos;
-    pos.left = (int)(readLeft() - node->movement.linear_movement.left);
-    pos.right = (int)(readRight() - node->movement.linear_movement.right);
-    pos.fwd = (int)(readFwd() - node->movement.linear_movement.fwd);
-    pos.bckwd = (int)(readBckwd() - node->movement.linear_movement.bckwd);
+    pos.left = (int)(current.left - node->movement.linear_movement.left);
+    pos.right = (int)(current.right - node->movement.linear_movement.right);
+    pos.fwd = (int)(current.fwd - node->movement.linear_movement.fwd);
+    pos.bckwd = (int)(current.bckwd - node->movement.linear_movement.bckwd);
     return pos;
-
 }
+
+char boundaryCheckLR(Position pos) {
+    if(pos.left > safe_z && pos.right > safe_z)
+        return 1;
+    return 0;
+}
+char boundaryCheckFB(Position pos) {
+    if(pos.fwd > safe_z && pos.bckwd > safe_z)
+        return 1;
+    return 0;
+}
+
+char boundaryCheck(Position pos) {
+    if(boundaryCheckFB(pos)&&boundaryCheckLR(pos))
+        return 1;
+    return 0;
+}
+
+char atSubLocation(int current, int final) {
+    if( (current < (final + tolerance))&&(current > (final - tolerance)) )
+        return 1;
+    return 0;
+}
+char atLRLocation(Position current, Position final) {
+    if(atSubLocation(current.left, final.left)&&atSubLocation(current.right, final.right))
+        return 1;
+    return 0;
+}
+char atFBLocation(Position current, Position final) {
+    if(atSubLocation(current.fwd, final.fwd)&&atSubLocation(current.bckwd, final.bckwd))
+        return 1;
+    return 0;
+}
+char atLocation(Position current, Position final) {
+    if(atLRLocation(current, final)&&atFBLocation(current, final))
+        return 1;
+    return 0;
+}
+
 
 
 //int main() {
@@ -261,16 +341,104 @@ Position deltaEnvironment(Motion* node, float tolerance) {
 char test0(Motion* node, float tolerance) {
     return 1;
 }
+
+//ideally read in parralele to stop driving
 char test1(Motion* node, float tolerance) {
-    drive(right, 10000);
-    return 1;
+    Serial.print("Fwd Distance");
+    Serial.println(readFwd());
+    Serial.print("Bckwd Distance");
+    Serial.println(readBckwd());
+    Serial.print("Left Distance");
+    Serial.println(readLeft());
+    Serial.print("Right Distance");
+    Serial.println(readRight());
 }
+
 char test2(Motion* node, float tolerance) {
-    drive(left, 1000);
+    while(!atLocation(currentPosition(), node->movement.linear_movement)) {//Not at the next spot yet
+        //Fix subLocation value LR, if near wall FB swap to FB and fix
+        while(!atLRLocation(currentPosition(), node->movement.linear_movement)) {
+            if(!boundaryCheckFB(currentPosition())) {
+                stop(left);
+                stop(right);
+                break; //Fix FB at wall
+            }
+            if(!boundaryCheckLR(currentPosition())) {
+                stop(left);
+                stop(right);
+                if(deltaEnvironment(node, currentPosition(), tolerance).right > 0) {
+                    stop(left);
+                    drive(right);
+                } else {
+                    stop(right);
+                    drive(left);
+                }
+            }
+            //If angle off fix angle
+            if(checkEnvironmentSum(node, currentPosition(), tolerance) == 2) {//Not orientated correctly
+                stop(left);
+                stop(right);
+                //Fix angle
+            }
+            //
+             if(deltaEnvironment(node, currentPosition(), tolerance).right > 0) {
+                 stop(left);
+                 drive(right);
+             } else {
+                 stop(right);
+                 drive(left);
+             }
+            //translate direction we need to go
+        }
+        stop(left);
+        stop(right);
+
+        //Fix sublocation value FB, if near wall LR swap to LR and fix
+        while(!atFBLocation(currentPosition(), node->movement.linear_movement)) {
+            if(!boundaryCheckLR(currentPosition())) {
+                stop(fwd);
+                stop(bckwd);
+                break; //Fix FB at wall
+            }
+            if(!boundaryCheckFB(currentPosition())) {
+                stop(fwd);
+                stop(bckwd);
+                if(deltaEnvironment(node, currentPosition(), tolerance).fwd > 0) {
+                    stop(bckwd);
+                    drive(fwd);
+                } else {
+                    stop(fwd);
+                    drive(bckwd);
+                }
+            }
+            //If angle off fix angle
+            if(checkEnvironmentSum(node, currentPosition(), tolerance) == 2) {//Not orientated correctly
+                stop(fwd);
+                stop(bckwd);
+                //Fix angle
+            }
+            //
+             if(deltaEnvironment(node, currentPosition(), tolerance).fwd > 0) {
+                 stop(bckwd);
+                 drive(fwd);
+             } else {
+                 stop(fwd);
+                 drive(bckwd);
+             }
+            //translate direction we need to go
+        }
+        stop(fwd);
+        stop(bckwd);
+
+    }
+    stop(fwd);
+    stop(bckwd);
+    stop(left);
+    stop(right);
     return 1;
 }
 char test3(Motion* node, float tolerance) {
-    drive(ccw, 1000);
+    drive(ccw);
     return 1;
 }
 char test4(Motion* node, float tolerance) {//fail
@@ -329,11 +497,8 @@ char (*functions[]) (Motion*, float) = {test0, test1, test2, test3, test4}; //BU
 
 const char config1[]=
 "@P1 \n"
-"T1:10 55 1000 1200 \n"
-"T1:10 55 1000 1200 \n"
-"T1:10 55 1000 1200 \n"
-"T1:10 55 1000 1200 \n"
-"T1:10 55 1000 1200 \n"
+"T1:100 10 1000 1200 \n"
+"T1:100 55 1000 1200 \n"
 "#P1 \n"
 " \n"
 "@P2 \n"
@@ -578,6 +743,7 @@ void pathFinder(Motion* node) {
 void setup() {
     Serial.begin(9600);
     motorInit();
+    tofInit();
     Motion nothing = {0};
     reccursiveParser(config1, &nothing);
     pathFinder(&nothing);
