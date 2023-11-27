@@ -1,0 +1,4 @@
+Battery Sag bc of motor resistance dropping
+Common ground
+Reduce polling period
+Offset sensor address by 10

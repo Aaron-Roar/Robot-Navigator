@@ -14,14 +14,19 @@ void setup() {
 }
 
 void loop() {
-    servo_top.write(90);
     servo_left.write(110);                  // sets the servo position according to the scaled value
     servo_right.write(70);                  // sets the servo position according to the scaled value
     delay(1000);
-
-    servo_top.write(0);
+    servo_top.write(90);
     delay(1000);
-    servo_left.write(90);                  // sets the servo position according to the scaled value
-    servo_right.write(90);                  // sets the servo position according to the scaled value
+
+    servo_top.write(30);
+    delay(1000);
+    servo_left.write(65);                  // sets the servo position according to the scaled value
+    servo_right.write(115);                  // sets the servo position according to the scaled value
+    delay(1000);
+    servo_top.write(90);
+    delay(1000);
+    servo_top.write(30);
     delay(1000);
 }

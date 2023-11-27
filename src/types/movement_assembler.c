@@ -2,10 +2,10 @@
 //#include <stddef.h>
 //#include <stdio.h>
 
-#define branch_limit 10
+#define branch_limit 2
 uint16_t motion_count = 0;
 size_t forks[branch_limit];
-Motion motions[500] = {0};
+Motion motions[20] = {0};
 
 Motion* addMotion(union MovementType new_movement, uint8_t type, int func, Motion* prev_movement) {
 
@@ -21,12 +21,23 @@ Motion* addMotion(union MovementType new_movement, uint8_t type, int func, Motio
         }
     }
 
-    motions[motion_count] = (Motion){
-        .type = type,
-        .func = func,
-        .movement = new_movement,
-        .next = {0}
-    };
+//    motions[motion_count] = (Motion){
+//        .type = type,
+//        .func = func,
+//        .movement = new_movement,
+//        .prev = prev_movement,
+//        .next = {0}
+//    };
+    Motion* mot = &motions[motion_count];
+
+    mot->type = type;
+    mot->func = func;
+    mot->movement = new_movement;
+    mot->prev = prev_movement;
+    mot->next[0] = {0};
+    mot->next[1] = {0};
+
+
     motion_count += 1;
 
 

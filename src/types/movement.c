@@ -10,9 +10,17 @@ typedef union MovementType {
 } MovementType;
 
 typedef struct Motion {
-    uint8_t type;
+    char type;
     int func;
     union MovementType movement;
 
-    struct Motion* next[10];
+    struct Motion* prev;
+    struct Motion* next[2];
 } Motion;
+
+//Motor Type
+typedef struct Direction {
+    char* motors;
+    char type;
+    struct Direction* opo_direction;
+} Direction;

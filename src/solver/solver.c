@@ -5,15 +5,23 @@
 const char applyMotion(Motion* node) {
     //Do motor movements and logic to acheive it
     if(node->func >= (sizeof(functions)/sizeof(functions[0]))) {
-        Serial.println("[!]Function not in list\n");
+        Serial.print("[!]Function: ");
+        Serial.print(node->func);
+        Serial.println(", not found in func list");
+        delay(100);
         return 0;
     }
     if(!functions[node->func](node, tolerance)) {
-        Serial.println("[#]Function failed to complete Reversing\n");
+        Serial.print("[#]Function: ");
+        Serial.print(node->func);
+        Serial.println(", FAILED.\nStarting Reversal");
+        delay(100);
         return 0;
     }
-    Serial.print("Movement: ");
+
+    Serial.print("[*]Finished Execution Function: ");
     Serial.println(node->func);
+    delay(100);
     return 1;
 
     //If successful return 1
@@ -22,7 +30,8 @@ const char applyMotion(Motion* node) {
 
 void pathFinder(Motion* node) {
     if(node->next[0] == 0) {
-        Serial.println("[#]Finished Maze!!\n");
+        Serial.println("[*]Program finished Execution!\n");
+        delay(100);
         exit(1); //Finished Maze
     }
     int i = 0;
