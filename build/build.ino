@@ -7,26 +7,29 @@
 #include <math.h>
 #include <Wire.h>
 #include <VL53L0X.h>
+#include <Servo.h>
 char wall_speed_zone = 100;
-char drive_fb_1cm_magnitude = 10;
+char drive_fb_1cm_magnitude = 1;
 char drive_lr_1cm_magnitude = 10;
 
 char stop_all_magnitude = 60;
-char stop_fb_magnitude = 60;
-char stop_lr_magnitude = 30;
-char stop_turn_magnitude = 20;
+char stop_fb_magnitude = 120;
+char stop_lr_magnitude = 60;
+char stop_turn_magnitude = 1;
 
-char crawl_magnitude = 50;
+char crawl_magnitude = 90;
+float crawl_zone = 175;
 
 char stop_crawl_all_magnitude = 30;
-char stop_crawl_fb_magnitude = 20;
-char stop_crawl_lr_magnitude = 30;
+char stop_crawl_fb_magnitude = 40;
+char stop_crawl_lr_magnitude = 20;
 char stop_crawl_turn_magnitude = 20;
 
-float rotation_gain = 2.1;
-float angle_tolerance = 26;
-float angle_check_percentage = 0.6;
-float cw_gain = 1;
+float rotation_gain = 2.3;
+float err_tolerance = 0.24;
+float angle_tolerance = 25;
+float angle_check_percentage = 0.9;
+float cw_gain = 1.1;
 float ccw_gain = 1;
 //#include <stdint.h>
 
@@ -61,7 +64,7 @@ typedef struct Direction {
 #define branch_limit 2
 uint16_t motion_count = 0;
 size_t forks[branch_limit];
-Motion motions[20] = {0};
+Motion motions[44] = {0};
 
 Motion* addMotion(union MovementType new_movement, uint8_t type, int func, Motion* prev_movement) {
 
@@ -137,7 +140,7 @@ char left_motors[]  ={3, 6, 8, 9};
 char right_motors[] ={4, 5, 7, 10};
 char cw_motors[]    ={3, 5, 8, 10};
 char ccw_motors[]   ={4, 6, 7, 9};
-char all_motors[]          ={3, 4, 5, 6, 7, 8, 9, 10};
+char all_motors[]   ={3, 4, 5, 6, 7, 8, 9, 10};
 
 Direction fwd;
 Direction bckwd;
@@ -205,15 +208,10 @@ void stop(Direction direction) {
 }
 
 void driveDistance(Direction direction, float distance) {
-    float duration = 0;
-
-    if(direction.type == 1)
-        duration = drive_fb_1cm_magnitude;
-    else if(direction.type = 2)
-        duration = drive_lr_1cm_magnitude;
+    float constant = 23;
 
     drive(direction);
-    delay((distance/10)*duration);
+    delay(distance*constant);
     stop(direction);
 }
 
@@ -246,12 +244,12 @@ void crawl(Direction direction) {
 void rotate(float degrees) {
     if(degrees > 0) {
         drive(cw);
-        delay(degrees*rotation_gain);
+        delay(degrees*rotation_gain*cw_gain);
         stop(cw);
     }
     else {
         drive(ccw);
-        delay(-1*degrees*rotation_gain);
+        delay(-1*degrees*rotation_gain*ccw_gain);
         stop(ccw);
     }
 }
@@ -353,37 +351,37 @@ void tofInit() {
 
 
 
-    fwd_tof.setTimeout(100);
-    bckwd_tof.setTimeout(100);
-    left_tof.setTimeout(100);
-    right_tof.setTimeout(100);
+    fwd_tof.setTimeout(800);
+    bckwd_tof.setTimeout(800);
+    left_tof.setTimeout(800);
+    right_tof.setTimeout(800);
 
 
-//        left_tof.setMeasurementTimingBudget(2000);
-//        left_tof.setSignalRateLimit(0.1);
-//        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-//
-//        right_tof.setMeasurementTimingBudget(2000);
-//        right_tof.setSignalRateLimit(0.1);
-//        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-//
-//        fwd_tof.setMeasurementTimingBudget(2000);
-//        fwd_tof.setSignalRateLimit(0.1);
-//        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-//
-//        bckwd_tof.setMeasurementTimingBudget(2000);
-//        bckwd_tof.setSignalRateLimit(0.1);
-//        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+        left_tof.setSignalRateLimit(0.1);
+        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        left_tof.setMeasurementTimingBudget(30000);
+
+        right_tof.setSignalRateLimit(0.1);
+        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        right_tof.setMeasurementTimingBudget(30000);
+
+        fwd_tof.setSignalRateLimit(0.1);
+        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        fwd_tof.setMeasurementTimingBudget(30000);
+
+        bckwd_tof.setSignalRateLimit(0.1);
+        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        bckwd_tof.setMeasurementTimingBudget(30000);
 
         Wire.beginTransmission (fwd_address);
         Wire.beginTransmission (bckwd_address);
         Wire.beginTransmission (left_address);
         Wire.beginTransmission (right_address);
-        delay(10);
+        delay(100);
 }
 
 int readFwd() {
@@ -423,38 +421,56 @@ Position currentPosition(int itterations) {
     int cycles = itterations;
     Position pos;
 
-    if(itterations <= 1) {
+    //if(itterations <= 1) {
         pos.fwd = readFwd();
         pos.bckwd = readBckwd();
         pos.left = readLeft();
         pos.right = readRight();
         return pos;
-    }
+    //}
 
-    int fwds[cycles];
-    int bckwds[cycles];
-    int lefts[cycles];
-    int rights[cycles];
+    //int fwds[cycles];
+    //int bckwds[cycles];
+    //int lefts[cycles];
+    //int rights[cycles];
 
 
-    while(cycles > 0) {
-        fwds[cycles] = readFwd();
-        bckwds[cycles] = readBckwd();
-        lefts[cycles] = readLeft();
-        rights[cycles] = readRight();
+    //while(cycles > 0) {
+    //    fwds[cycles] = readFwd();
+    //    bckwds[cycles] = readBckwd();
+    //    lefts[cycles] = readLeft();
+    //    rights[cycles] = readRight();
 
-        cycles -= 1;
-    }
-    pos.fwd = mode(fwds, sizeof(fwds)/sizeof(fwds[0]));
-    pos.bckwd = mode(bckwds, sizeof(bckwds)/sizeof(bckwds[0]));
-    pos.left = mode(lefts, sizeof(lefts)/sizeof(lefts[0]));
-    pos.right = mode(rights, sizeof(rights)/sizeof(rights[0]));
+    //    cycles -= 1;
+    //}
+    //pos.fwd = mode(fwds, sizeof(fwds)/sizeof(fwds[0]));
+    //pos.bckwd = mode(bckwds, sizeof(bckwds)/sizeof(bckwds[0]));
+    //pos.left = mode(lefts, sizeof(lefts)/sizeof(lefts[0]));
+    //pos.right = mode(rights, sizeof(rights)/sizeof(rights[0]));
 
-    return pos;
+    //return pos;
 }
 
 float tolerance = 10;
 float safe_z = 20;
+
+void measure(Motion* node) {
+    Position pos = currentPosition(9);
+    Serial.print("Fwd: ");
+    Serial.println(pos.fwd);
+    Serial.print("Bckwd: ");
+    Serial.println(pos.bckwd);
+    Serial.print("Left: ");
+    Serial.println(pos.left);
+    Serial.print("Right: ");
+    Serial.println(pos.right);
+    Serial.print("Angle FB: ");
+    Serial.println(angleD((node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd), (pos.fwd + pos.bckwd)));
+    Serial.print("Angle LR: ");
+    Serial.println(angleD((node->movement.linear_movement.left + node->movement.linear_movement.right), (pos.left + pos.right)));
+    Serial.println("-----------------------");
+
+}
 
 float angleD(float ideal, float actual) {
     float rad_angle;
@@ -467,86 +483,166 @@ float angleD(float ideal, float actual) {
     }
     float angle = -1*((180/3.1415926)*rad_angle - 90);
 
+    if(angle > 90)
+        return 90;
 
     return angle;
 }
 
-
-void correctAngleLR(Motion* node) {
-    Position pos;
-
-    float ideal = node->movement.linear_movement.left + node->movement.linear_movement.right;
-    pos = currentPosition(9);
-    float actual = pos.left + pos.right;
-    float angle_0 = angleD(ideal, actual);
-    Serial.print("Angle: ");
-    Serial.println(angle_0);
-
-    if(angle_0 < angle_tolerance && angle_0 > -1*angle_tolerance) {
-    }
-    else {
-        //Check cw
-        rotate(angle_0*angle_check_percentage);
-        delay(50);
-
-        pos = currentPosition(9);
-        actual = pos.left + pos.right;
-        float angle_1 = angleD(ideal, actual);
-        Serial.print("Attempted fix Angle: ");
-        Serial.println(angle_1);
-
-        if(angle_1 < angle_0) {
-            rotate(angle_1*cw_gain); //roatet cw
-            Serial.println("Rotated CW");
-        }
-        else {
-            rotate(-1*angle_1*ccw_gain); //rotate ccw
-            Serial.println("Rotated CCW");
-        }
-    }
-
-
-}
-
-float correctAngleFB(Motion* node) {
+float readAngleFB(Motion* node) {
     Position pos;
 
     float ideal = node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd;
     pos = currentPosition(9);
     float actual = pos.bckwd + pos.fwd;
     float angle_0 = angleD(ideal, actual);
-    Serial.print("Angle: ");
-    Serial.println(angle_0);
 
-    if(angle_0 < angle_tolerance && angle_0 > -1*angle_tolerance) {
+    rotate(angle_0*angle_check_percentage);
+
+    pos = currentPosition(9);
+    actual = pos.bckwd + pos.fwd;
+    float check_angle = angleD(ideal, actual);
+
+    if(check_angle < angle_0)
+        return 1*check_angle;
+
+    return -1*check_angle;
+
+}
+
+float readAngleLR(Motion* node) {
+    Position pos;
+
+    float ideal = node->movement.linear_movement.left + node->movement.linear_movement.right;
+    pos = currentPosition(9);
+    float actual = pos.left + pos.right;
+    float angle_0 = angleD(ideal, actual);
+
+    rotate(angle_0*angle_check_percentage);
+
+    pos = currentPosition(9);
+    actual = pos.left + pos.right;
+    float check_angle = angleD(ideal, actual);
+
+    if(check_angle < angle_0)
+        return 1*check_angle;
+
+    return -1*check_angle;
+
+}
+
+void correctAngleLR(Motion* node) {
+    float d_angle = readAngleLR(node);
+    rotate(d_angle);
+}
+
+float correctAngleFB(Motion* node) {
+        float d_angle = readAngleFB(node);
+        rotate(d_angle);
+
+}
+
+float readErrorFB(Motion* node) {
+    float ideal = node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd;
+    Position pos = currentPosition(9);
+    float actual = pos.fwd + pos.bckwd;
+    
+    return abs(ideal - actual);
+}
+
+float readErrorLR(Motion* node) {
+    float ideal = node->movement.linear_movement.left + node->movement.linear_movement.right;
+    Position pos = currentPosition(9);
+    float actual = pos.left + pos.right;
+    
+    return abs(ideal - actual);
+
+}
+
+float correctAngleFB2(Motion* node) {
+    float err = readErrorFB(node);
+    while(err > err_tolerance*(node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd)) {
+        rotate(30);
+        delay(40);
+        float err_check = readErrorFB(node);
+        delay(40);
+
+        if(err_check > err)
+            rotate(-60);
+        delay(40);
+        err = readErrorFB(node);
+        delay(40);
     }
-    else {
-        //Check cw
-        rotate(angle_0*angle_check_percentage);
-        delay(50);
+}
 
-        pos = currentPosition(9);
-        actual = pos.bckwd + pos.fwd;
-        float angle_1 = angleD(ideal, actual);
-        Serial.print("Attempted fix Angle: ");
-        Serial.println(angle_1);
+float correctAngleLR2(Motion* node) {
+    float err = readErrorLR(node);
+    while(err > err_tolerance*(node->movement.linear_movement.left + node->movement.linear_movement.right)) {
+        rotate(30);
+        delay(30);
+        float err_check = readErrorLR(node);
+        delay(30);
 
-        if(angle_1 < angle_0) {
-            rotate(angle_1*cw_gain); //roatet cw
-            Serial.println("Rotated CW");
-        }
-        else {
-            rotate(-1*angle_1*ccw_gain); //rotate ccw
-            Serial.println("Rotated CCW");
-        }
+        if(err_check > err)
+            rotate(-60);
+        delay(30);
+        err = readErrorLR(node);
+        delay(30);
     }
+}
 
+
+void pidCorrectFB(Motion* node) {
+    float ideal = node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd;
+     /*How long since we last calculated*/
+    int count = 0;
+    unsigned long lastTime;
+    double Input;
+    float Output;
+    double Setpoint = 0;
+    double errSum, lastErr;
+    double kp = 0.02;
+    double ki = 0.04;
+    double kd = 0.04;
+
+    while(count < 5) {
+
+        float real_angle;
+
+
+            Input = real_angle;
+
+            unsigned long now = millis();
+            double timeChange = (double)(now - lastTime);
+            double error = Setpoint - Input;
+            errSum += (error * timeChange);
+            double dErr = (error - lastErr) / timeChange;
+  
+            Output = kp * error + ki * errSum + kd * dErr;
+            Serial.print("Pid intended angle change: ");
+            Serial.println(kp * error + ki * errSum + kd * dErr);
+            rotate(Output);
+
+            Position pos2 = currentPosition(9);
+            float actual2 = pos2.bckwd + pos2.fwd;
+            float angle_3 = angleD(ideal, actual2);
+            Serial.print("Pid corrected Angle: ");
+            Serial.println(angle_3);
+  
+            /*Remember some variables for next time*/
+            lastErr = error;
+            lastTime = now;
+        count += 1;
+    
+    }
 
 }
 
 
-
 char test0(Motion* node, float tolerance) {
+    while(1) {
+        measure(node);
+    }
     return 1;
 }
 
@@ -557,23 +653,50 @@ char test1(Motion* node, float tolerance) {
 }
 
 char test2(Motion* node, float tolerance) {
-    while(currentPosition(10).fwd > node->movement.linear_movement.fwd + tolerance*5) {
-        drive(fwd);
-    }
-    stop(fwd);
-    while(currentPosition(10).fwd > node->movement.linear_movement.fwd) {
-        crawl(fwd);
-    }
-}
-char test3(Motion* node, float tolerance) {
-    int i = 0;
-    while(i < 4) {
-        correctAngleFB(node);
-        i += 1;
-    }
-
+    driveToLR(node);
     return 1;
 }
+
+char test3(Motion* node, float tolerance) {
+    drive(fwd);
+    delay(5000);
+    stop(fwd);
+    delay(4000);
+    return 1;
+}
+
+char test4(Motion* node, float tolerance) {//fail
+    rotate(90);
+    return 1;
+}
+
+char test5(Motion* node, float tolerance) {
+    while(currentPosition(9).fwd > 60) {
+        drive(fwd);
+    }
+    return 1;
+}
+
+char test6(Motion* node, float tolerance) {
+    ramp(node);
+}
+
+char test7(Motion* node, float tolerance) {
+    Servo servo;  // create servo object to control a servo
+    servo.attach(11);  // attaches the servo on pin 9 to the servo object
+    servo.write(0);
+    delay(2000);
+    servo.write(80);
+    delay(2000);
+}
+
+char test8(Motion* node, float tolerance) {
+    drive(fwd);
+    delay(500);
+    stop(fwd);
+}
+
+
 
 
 char driveToLR(Motion* node) {
@@ -587,45 +710,41 @@ char driveToLR(Motion* node) {
         fb_dir = &right;
     }
 
-    correctAngleLR(node);
-    float ideal = node->movement.linear_movement.left + node->movement.linear_movement.right;
-    while(1) {
+    int end = 0;
+    while(end == 0) {
         state = currentPosition(1);
         float actual = state.left + state.right;
-        Serial.print("Angle off: ");
-        Serial.println(angleD(ideal, actual));
+        float err = readErrorLR(node);
 
-        if(state.fwd < 20) {
-            Serial.println("Going fwd");
+        if(state.fwd < 23) {
+            Serial.println("Going right");
             stop(*fb_dir);
-            driveDistance(fwd, 10);
+            crawl(bckwd);
         }
-        else if(state.bckwd < 20) {
-            Serial.println("Going bckwd");
+        else if(state.bckwd < 23) {
+            Serial.println("Going left");
             stop(*fb_dir);
-            driveDistance(bckwd, 10);
+            crawl(fwd);
         }
-        else if(angleD(ideal, actual) > angle_tolerance || angleD(ideal, actual) < -1*angle_tolerance ) {
+        else if(err > err_tolerance*(node->movement.linear_movement.left + node->movement.linear_movement.right)) {
             Serial.println("Fixin angle");
             stop(*fb_dir);
-            correctAngleLR(node);
+            correctAngleLR2(node);
         }
-        else if(fb_dir == &left && state.left <= node->movement.linear_movement.left) {
+        else if( (fb_dir == &left && state.left <= node->movement.linear_movement.left) && (err < err_tolerance*(node->movement.linear_movement.left + node->movement.linear_movement.right) ) ) {
             stop(*fb_dir);
-            correctAngleLR(node);
-            break;
+            end = 1;
         }
-        else if(fb_dir == &right && state.right <= node->movement.linear_movement.right) {
+        else if( (fb_dir == &right && state.right <= node->movement.linear_movement.right) && (err < err_tolerance*(node->movement.linear_movement.left + node->movement.linear_movement.right)) ) {
             stop(*fb_dir);
-            correctAngleLR(node);
-            break;
+            end = 1;
         }
-        else if(fb_dir == &left && state.left < 200) {
+        else if(fb_dir == &left && state.left < (node->movement.linear_movement.left + crawl_zone) ) {
             Serial.println("Crawling fwd");
             stop(*fb_dir);
             crawl(*fb_dir);
         }
-        else if(fb_dir == &right && state.right < 200) {
+        else if(fb_dir == &right && state.right < (node->movement.linear_movement.right + crawl_zone) ) {
             Serial.println("Crawling fwd");
             stop(*fb_dir);
             crawl(*fb_dir);
@@ -636,6 +755,7 @@ char driveToLR(Motion* node) {
         }
     }
     stop(*fb_dir);
+
 }
 
 char driveToFB(Motion* node) {
@@ -649,45 +769,41 @@ char driveToFB(Motion* node) {
         fb_dir = &bckwd;
     }
 
-    correctAngleFB(node);
-    float ideal = node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd;
-    while(1) {
+    int end = 0;
+    while(end == 0) {
         state = currentPosition(1);
         float actual = state.fwd + state.bckwd;
-        Serial.print("Angle off: ");
-        Serial.println(angleD(ideal, actual));
+        float err = readErrorFB(node);
 
-        if(state.left < 20) {
-            Serial.println("Going left");
-            stop(*fb_dir);
-            driveDistance(left, 10);
-        }
-        else if(state.right < 20) {
+        if(state.left < 23) {
             Serial.println("Going right");
             stop(*fb_dir);
-            driveDistance(right, 10);
+            crawl(right);
         }
-        else if(angleD(ideal, actual) > angle_tolerance || angleD(ideal, actual) < -1*angle_tolerance ) {
+        else if(state.right < 23) {
+            Serial.println("Going left");
+            stop(*fb_dir);
+            crawl(left);
+        }
+        else if(err > err_tolerance*(node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd)) {
             Serial.println("Fixin angle");
             stop(*fb_dir);
-            correctAngleFB(node);
+            correctAngleFB2(node);
         }
-        else if(fb_dir == &fwd && state.fwd <= node->movement.linear_movement.fwd) {
+        else if( (fb_dir == &fwd && state.fwd <= node->movement.linear_movement.fwd) && (err < err_tolerance*(node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd) ) ) {
             stop(*fb_dir);
-            correctAngleFB(node);
-            break;
+            end = 1;
         }
-        else if(fb_dir == &bckwd && state.bckwd <= node->movement.linear_movement.bckwd) {
+        else if( (fb_dir == &bckwd && state.bckwd <= node->movement.linear_movement.bckwd) && (err < err_tolerance*(node->movement.linear_movement.fwd + node->movement.linear_movement.bckwd)) ) {
             stop(*fb_dir);
-            correctAngleFB(node);
-            break;
+            end = 1;
         }
-        else if(fb_dir == &fwd && state.fwd < 200) {
+        else if(fb_dir == &fwd && state.fwd < (node->movement.linear_movement.fwd + crawl_zone) ) {
             Serial.println("Crawling fwd");
             stop(*fb_dir);
             crawl(*fb_dir);
         }
-        else if(fb_dir == &bckwd && state.bckwd < 200) {
+        else if(fb_dir == &bckwd && state.bckwd < (node->movement.linear_movement.bckwd + crawl_zone) ) {
             Serial.println("Crawling fwd");
             stop(*fb_dir);
             crawl(*fb_dir);
@@ -701,25 +817,65 @@ char driveToFB(Motion* node) {
 
 }
 
-char test4(Motion* node, float tolerance) {//fail
-    driveToFB(node);
-    return 1;
+
+char ramp(Motion* node) {
+    Direction* fb_dir = &all;
+    Position state = currentPosition(1);
+
+    fb_dir = &fwd;
+
+    int end = 0;
+    while(currentPosition(1).fwd > 60) {
+        state = currentPosition(1);
+        float actual = state.left + state.right;
+        float err = readErrorLR(node);
+
+        if(state.left < 23) {
+            Serial.println("Going right");
+            stop(*fb_dir);
+            crawl(right);
+        }
+        else if(state.right < 23) {
+            Serial.println("Going left");
+            stop(*fb_dir);
+            crawl(left);
+        }
+        else if(err > err_tolerance*(node->movement.linear_movement.left + node->movement.linear_movement.right)) {
+            Serial.println("Fixin angle");
+            stop(*fb_dir);
+            correctAngleLR2(node);
+        }
+        else {
+            Serial.println("driving fwd");
+            crawl(*fb_dir);
+        }
+    }
+    stop(*fb_dir);
+
+}
+
+char offroad(Motion* node) {
+    drive(fwd);
+    delay(5000);
 }
 
 
-char (*functions[]) (Motion*, float) = {test0, test1, test2, test3, test4}; //BUG TEST 0 is used as safe space value and should not be executed but it is one program reversal
+char (*functions[]) (Motion*, float) = {test0, test1, test2, test3, test4, test5, test6, test7}; //BUG TEST 0 is used as safe space value and should not be executed but it is one program reversal
 
 
 const char config1[]=
 "@P1 \n"
-"T1:45 536 21 21 \n"
-"T1:536 45 21 21 \n"
+"T1:59 391 10 10 \n"
+"T2:10 10 453 251 \n"
+"T1:462 633 10 10 \n"
+"T1:257 542 10 10 \n"
+"T7:10 10 10 10 \n"
+"T2:10 10 258 447 \n"
+"T1:598 57 10 10 \n"
+"T2:10 10 35 623 \n"
 "#P1 \n"
 " \n"
 "@P2 \n"
-"T3:535 43 361 22 \n"
-"T3:355 215 22 22 \n"
-"T3:22 552 628 22 \n"
 "#P2 \n"
 " \n"
 "@P3 \n"

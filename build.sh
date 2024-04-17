@@ -12,6 +12,8 @@ echo '#include <stdint.h>' >> $file
 echo '#include <math.h>'   >> $file
 echo '#include <Wire.h>' >> $file
 echo '#include <VL53L0X.h>' >> $file
+echo '#include <Servo.h>' >> $file
+
 cat tunes/laminate_floor.h >> $file
 cat src/types/movement.c >> $file
 cat src/types/movement_assembler.c >> $file
@@ -20,6 +22,7 @@ cat src/hardware/tof.c >> $file
 cat src/control/translation_checker.c >> $file
 cat src/control/translation_functions.c >> $file
 cat maze-files/formatted-data/config1.h >> $file
+#cat maze-files/formatted-data/config2.h >> $file
 cat src/parser/parser.c >> $file
 cat src/solver/solver.c >> $file
 cat src/main.ino >> $file

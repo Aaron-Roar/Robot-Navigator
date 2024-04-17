@@ -13,7 +13,7 @@ char left_motors[]  ={3, 6, 8, 9};
 char right_motors[] ={4, 5, 7, 10};
 char cw_motors[]    ={3, 5, 8, 10};
 char ccw_motors[]   ={4, 6, 7, 9};
-char all_motors[]          ={3, 4, 5, 6, 7, 8, 9, 10};
+char all_motors[]   ={3, 4, 5, 6, 7, 8, 9, 10};
 
 Direction fwd;
 Direction bckwd;
@@ -81,15 +81,10 @@ void stop(Direction direction) {
 }
 
 void driveDistance(Direction direction, float distance) {
-    float duration = 0;
-
-    if(direction.type == 1)
-        duration = drive_fb_1cm_magnitude;
-    else if(direction.type = 2)
-        duration = drive_lr_1cm_magnitude;
+    float constant = 23;
 
     drive(direction);
-    delay((distance/10)*duration);
+    delay(distance*constant);
     stop(direction);
 }
 
@@ -122,12 +117,12 @@ void crawl(Direction direction) {
 void rotate(float degrees) {
     if(degrees > 0) {
         drive(cw);
-        delay(degrees*rotation_gain);
+        delay(degrees*rotation_gain*cw_gain);
         stop(cw);
     }
     else {
         drive(ccw);
-        delay(-1*degrees*rotation_gain);
+        delay(-1*degrees*rotation_gain*ccw_gain);
         stop(ccw);
     }
 }

@@ -1,0 +1,18 @@
+#T1 FB
+#T2 LR
+#T3 Offroad fwd
+#T4 rotate 90
+#T5 drive fwd to wall
+#T6 drop package
+
+---------------------------
+T2: LR to inline with grey mat
+T3: Fwd over wood
+T4: rotate 90
+T5: drive to the bottom wall
+
+T1 & T2 do rest of maze
+
+T6 drop package
+
+

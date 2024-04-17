@@ -58,37 +58,37 @@ void tofInit() {
 
 
 
-    fwd_tof.setTimeout(100);
-    bckwd_tof.setTimeout(100);
-    left_tof.setTimeout(100);
-    right_tof.setTimeout(100);
+    fwd_tof.setTimeout(800);
+    bckwd_tof.setTimeout(800);
+    left_tof.setTimeout(800);
+    right_tof.setTimeout(800);
 
 
-//        left_tof.setMeasurementTimingBudget(2000);
-//        left_tof.setSignalRateLimit(0.1);
-//        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-//
-//        right_tof.setMeasurementTimingBudget(2000);
-//        right_tof.setSignalRateLimit(0.1);
-//        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-//
-//        fwd_tof.setMeasurementTimingBudget(2000);
-//        fwd_tof.setSignalRateLimit(0.1);
-//        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
-//
-//        bckwd_tof.setMeasurementTimingBudget(2000);
-//        bckwd_tof.setSignalRateLimit(0.1);
-//        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
-//        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+        left_tof.setSignalRateLimit(0.1);
+        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        left_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        left_tof.setMeasurementTimingBudget(30000);
+
+        right_tof.setSignalRateLimit(0.1);
+        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        right_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        right_tof.setMeasurementTimingBudget(30000);
+
+        fwd_tof.setSignalRateLimit(0.1);
+        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        fwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        fwd_tof.setMeasurementTimingBudget(30000);
+
+        bckwd_tof.setSignalRateLimit(0.1);
+        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 20);
+        bckwd_tof.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 18);
+        bckwd_tof.setMeasurementTimingBudget(30000);
 
         Wire.beginTransmission (fwd_address);
         Wire.beginTransmission (bckwd_address);
         Wire.beginTransmission (left_address);
         Wire.beginTransmission (right_address);
-        delay(10);
+        delay(100);
 }
 
 int readFwd() {
@@ -128,33 +128,33 @@ Position currentPosition(int itterations) {
     int cycles = itterations;
     Position pos;
 
-    if(itterations <= 1) {
+    //if(itterations <= 1) {
         pos.fwd = readFwd();
         pos.bckwd = readBckwd();
         pos.left = readLeft();
         pos.right = readRight();
         return pos;
-    }
+    //}
 
-    int fwds[cycles];
-    int bckwds[cycles];
-    int lefts[cycles];
-    int rights[cycles];
+    //int fwds[cycles];
+    //int bckwds[cycles];
+    //int lefts[cycles];
+    //int rights[cycles];
 
 
-    while(cycles > 0) {
-        fwds[cycles] = readFwd();
-        bckwds[cycles] = readBckwd();
-        lefts[cycles] = readLeft();
-        rights[cycles] = readRight();
+    //while(cycles > 0) {
+    //    fwds[cycles] = readFwd();
+    //    bckwds[cycles] = readBckwd();
+    //    lefts[cycles] = readLeft();
+    //    rights[cycles] = readRight();
 
-        cycles -= 1;
-    }
-    pos.fwd = mode(fwds, sizeof(fwds)/sizeof(fwds[0]));
-    pos.bckwd = mode(bckwds, sizeof(bckwds)/sizeof(bckwds[0]));
-    pos.left = mode(lefts, sizeof(lefts)/sizeof(lefts[0]));
-    pos.right = mode(rights, sizeof(rights)/sizeof(rights[0]));
+    //    cycles -= 1;
+    //}
+    //pos.fwd = mode(fwds, sizeof(fwds)/sizeof(fwds[0]));
+    //pos.bckwd = mode(bckwds, sizeof(bckwds)/sizeof(bckwds[0]));
+    //pos.left = mode(lefts, sizeof(lefts)/sizeof(lefts[0]));
+    //pos.right = mode(rights, sizeof(rights)/sizeof(rights[0]));
 
-    return pos;
+    //return pos;
 }
 
