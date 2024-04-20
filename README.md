@@ -20,8 +20,8 @@ curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.
 
 Clone the git repository from github and change into the project directory
 ```bash
-$ git clone url
-$ cd url
+$ git clone https://github.com/Aaron-Roar/Robot-Navigator.git
+$ cd Robot-Navigator
 ```
 Program maze by adding a maze file.
 Currently The maze file added will have to be referenced in source code.
