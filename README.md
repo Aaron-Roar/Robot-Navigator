@@ -48,3 +48,4 @@ T2:10 60 95 5
 #Solution2
 ```
 
+![Alt text](https://github.com/Aaron-Roar/Robot-Navigator/blob/main/doc/sample_maze.png "Sample Maze Diagram")
